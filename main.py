@@ -6,8 +6,9 @@ from AddBook import save_book
 from Book import Book
 from Connection import Connection
 from DeleteBook import delete_book
-from ReturnBook import get_book_by_id
-from ViewBooks import get_all_books, get_books_by_name
+from IssueBook import issue_book
+from ReturnBook import return_book
+from ViewBooks import get_all_books, get_books_by_name, get_book_by_id
 
 #TODO: Improve UI
 #TODO: Improve error handle and message
@@ -17,6 +18,7 @@ class UI:
         self.table_widget = None
         self.id_input = None
         self.name_input = None
+        self.issue_input = None
         self.books = {}
         self.book_content = None
     
@@ -180,6 +182,35 @@ class UI:
             delete_book(book)
         
         self.get_all_books()
+    
+    def issue_book(self):
+        if(self.table_widget is None):
+            return
+
+        if(self.issue_input is None):
+            return
+
+        issuer_clean = self.clean_value(self.issue_input.get())
+        if(issuer_clean == ""):
+            return
+        self.issue_input.delete(0,'end')
+        selected = self.table_widget.selection()
+        for id in selected:
+            book = self.books[int(id)]
+            issue_book(book,issuer_clean)
+        
+        self.get_all_books()
+
+    def return_book(self):
+        if(self.table_widget is None):
+            return
+        
+        selected = self.table_widget.selection()
+        for id in selected:
+            book = self.books[int(id)]
+            return_book(book)
+        
+        self.get_all_books()
 
     def clear_search(self):
         if(self.id_input is not None):
@@ -221,7 +252,7 @@ class UI:
         content.grid(column=0, row=0)
         frame_table.grid(column=0, row=0, columnspan=5, rowspan=20)
 
-        search_row = 2
+        search_row = 4
 
         # Search header
         search_fields_label= ttk.Label(content, text="Search fields")
@@ -257,7 +288,19 @@ class UI:
 
         # Delete book button
         delete_book_button = ttk.Button(content, text="Delete Book",command=self.delete_book)
-        delete_book_button.grid(column=9, row=0,padx=5)
+        delete_book_button.grid(column=8, row=0,padx=5)
+
+        # Issue section
+        issue_name_label = ttk.Label(content, text="Issuer name:")
+        issue_name_label.grid(column=6,row=2,padx=5)
+        self.issue_input = ttk.Entry(content)
+        self.issue_input.grid(column=7, row=2,padx=5)
+        issue_book_button = ttk.Button(content, text="Issue Book",command=self.issue_book)
+        issue_book_button.grid(column=8, row=2,padx=5)
+
+        # Return book button
+        return_book_button = ttk.Button(content, text="Return Book",command=self.return_book)
+        return_book_button.grid(column=9, row=0,padx=5)
 
         self.get_all_books()
         
